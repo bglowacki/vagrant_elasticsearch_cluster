@@ -3,3 +3,4 @@
 .vagrant
 .otto
 index.json
+elasticsearch*.deb

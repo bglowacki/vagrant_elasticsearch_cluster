@@ -18,6 +18,10 @@ Vagrant.configure(2) do |config|
   config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
 
+  config.vm.define "es-client-01" do |machine|
+    machine.vm.provision "shell", inline: "yes | wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.2.deb -P /vagrant"
+  end
+
   ["es-client-01", "es-client-02", "es-master-01", "es-master-02", "es-master-03", "es-data-01", "es-data-02", "es-data-03", "es-data-04"].each_with_index do |machine_name, index|
     config.vm.define machine_name do |machine|
       machine.vm.box = "hashicorp/precise32"
@@ -29,8 +33,7 @@ Vagrant.configure(2) do |config|
       machine.vm.provision "shell", inline: "yes | sudo apt-get update"
       machine.vm.provision "shell", inline: "yes | sudo apt-get install curl"
       machine.vm.provision "shell", inline: "yes | sudo apt-get install openjdk-7-jre"
-      machine.vm.provision "shell", inline: "yes | wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.2.deb"
-      machine.vm.provision "shell", inline: "yes | sudo dpkg -i elasticsearch-1.7.2.deb"
+      machine.vm.provision "shell", inline: "yes | sudo dpkg -i /vagrant/elasticsearch-1.7.2.deb"
       machine.vm.provision "shell", inline: "yes | sudo update-rc.d elasticsearch defaults"
       machine.vm.provision "shell", inline: "yes | echo 'cluster.name: my_cluster' >> /etc/elasticsearch/elasticsearch.yml"
       machine.vm.provision "shell", inline: "yes | echo 'node.name: #{machine_name}' >> /etc/elasticsearch/elasticsearch.yml"
@@ -40,6 +43,8 @@ Vagrant.configure(2) do |config|
       machine.vm.provision "shell", inline: "yes | echo 'discovery.zen.ping.unicast.hosts: [\"es-client-01\", \"es-client-02\", \"es-master-01\", \"es-master-02\", \"es-master-03\", \"es-data-01\", \"es-data-02\", \"es-data-03\", \"es-data-04\"]' >> /etc/elasticsearch/elasticsearch.yml"
     end
   end
+
+
 
   ["es-client-01", "es-client-02"].each do |machine_name|
     config.vm.define machine_name do |machine|
